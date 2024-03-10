@@ -11,20 +11,39 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Servidor {
+public class Servidor extends Thread {
     
-    private static ServerSocket servidor;
     private static Socket conexao;
-    private static ObjectInputStream entrada;
-    private static DataOutputStream saida;
-           
+   
     public static void main(String[] args) {
 
         try {
-            servidor = new ServerSocket(50000);
-            System.out.println("Aguardando Conexao...");
-            conexao = servidor.accept();
-            
+            ServerSocket servidor = new ServerSocket(50000);
+           
+            while(true){
+                System.out.println("Aguardando Conexao..."); 
+                Socket conexao = servidor.accept();
+                Servidor theadServidor = new Servidor(conexao);
+                theadServidor.start();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private Servidor(Socket conexao) {
+        this.conexao = conexao;
+    }
+    
+    private Servidor() {
+    }
+
+    public void run(){
+     
+        try {
+            ObjectInputStream entrada;
+            DataOutputStream saida;
+           
             entrada = new ObjectInputStream(conexao.getInputStream());
             Pessoa pessoa = (Pessoa)entrada.readObject();
             System.out.println("Objeto tipo Pessoa, recebido com sucesso.");
@@ -35,20 +54,18 @@ public class Servidor {
             tempo();
             saida.writeUTF("Dados recebidos corretamente!");
             
-            conexao.close();
-            
         } catch (IOException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
-          
-    public static void tempo(){
+
+     public static void tempo(){
         
         try {
-            Thread.sleep(3000);
+            Thread.sleep(3500);
         } catch (InterruptedException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
